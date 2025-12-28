@@ -1,0 +1,20 @@
+@model DndCompanion.Models.CampaignModel
+
+<div class="container">
+    <h2>Create New Campaign</h2>
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label">Name</label>
+            <input asp-for="Name" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">Description</label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+        </div>
+        <div class="form-check mb-3">
+            <input asp-for="Public" class="form-check-input" type="checkbox" />
+            <label asp-for="Public" class="form-check-label">Is Public</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Campaign</button>
+    </form>
+</div>

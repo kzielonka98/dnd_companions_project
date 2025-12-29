@@ -1,10 +1,11 @@
 using System;
 using DndCompanion.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace DndCompanion.Data{
 
-    public class DndCompanionContext : DbContext
+    public class DndCompanionContext : IdentityDbContext<UserModel>
     {
 
         public DndCompanionContext(DbContextOptions<DndCompanionContext> options)

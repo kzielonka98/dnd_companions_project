@@ -1,5 +1,7 @@
 using DndCompanion.Data;
 using DndCompanion.Data.Services;
+using DndCompanion.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
@@ -14,6 +16,20 @@ builder.Services.AddDbContext<DndCompanionContext>(
     ServerVersion.AutoDetect(connectionString)
 ));
 
+builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
+    {
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredLength = 8;
+        options.User.RequireUniqueEmail = true;
+        options.SignIn.RequireConfirmedEmail = false;
+        options.SignIn.RequireConfirmedPhoneNumber = false;
+        options.SignIn.RequireConfirmedAccount = false;
+    })
+    .AddEntityFrameworkStores<DndCompanionContext>()
+    .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<ICampaingsService, CampaingsService>();
 
@@ -29,6 +45,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
 
 app.UseAuthorization();
 

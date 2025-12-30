@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using DndCompanion.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DndCompanion.Controllers;
 
@@ -11,6 +12,7 @@ public class HomeController : Controller
         return View();
     }
 
+    [Authorize]
     public IActionResult Privacy()
     {
         return View();

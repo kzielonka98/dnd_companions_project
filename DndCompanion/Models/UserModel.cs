@@ -8,6 +8,6 @@ namespace DndCompanion.Models
 {
     public class UserModel : IdentityUser
     {
-        
+        public string? PublicUserName { get; set; }
     }
 }

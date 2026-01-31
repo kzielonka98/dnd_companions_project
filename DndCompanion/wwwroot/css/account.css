@@ -1,8 +1,8 @@
 .account-containter {
-    background-image:url('../images/nebula_NGC7293.jpg');
+    /*background-image:url('../images/nebula_NGC7293.jpg');
     background-size: cover;
     background-position: center;
-    background-repeat: repeat-y;
+    background-repeat: repeat-y;*/
     display: flex;
     justify-content: center;
     align-items: center;

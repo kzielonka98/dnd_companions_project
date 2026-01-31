@@ -1,27 +1,26 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using DndCompanion.Models;
 using DndCompanion.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace DndCompanion.Controllers
 {
     public class AccountController : Controller
     {
-
         private readonly SignInManager<UserModel> _signInManager;
 
         private readonly UserManager<UserModel> _userManager;
 
-        public AccountController(SignInManager<UserModel> signInManager, UserManager<UserModel> userManager)
+        private const string emailRegex = @"[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+";
+
+        public AccountController(
+            SignInManager<UserModel> signInManager,
+            UserManager<UserModel> userManager
+        )
         {
-            this._signInManager = signInManager;
-            this._userManager = userManager;
+            _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         public IActionResult Login()
@@ -34,7 +33,35 @@ namespace DndCompanion.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+                Microsoft.AspNetCore.Identity.SignInResult result;
+
+                if (!IsEmail(model.EmailorUsername))
+                {
+                    result = await _signInManager.PasswordSignInAsync(
+                        model.EmailorUsername,
+                        model.Password,
+                        model.RememberMe,
+                        false
+                    );
+                }
+                else
+                {
+                    var user = await _userManager.FindByEmailAsync(model.EmailorUsername);
+                    if (user != null)
+                    {
+                        result = await _signInManager.PasswordSignInAsync(
+                            user.UserName,
+                            model.Password,
+                            model.RememberMe,
+                            false
+                        );
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Email or password is incorrect");
+                        return View(model);
+                    }
+                }
 
                 if (result.Succeeded)
                 {
@@ -48,7 +75,12 @@ namespace DndCompanion.Controllers
             }
 
             return View(model);
-        }   
+        }
+
+        private static bool IsEmail(string EmailorUsername)
+        {
+            return Regex.IsMatch(EmailorUsername, emailRegex);
+        }
 
         public IActionResult Register()
         {
@@ -60,12 +92,7 @@ namespace DndCompanion.Controllers
         {
             if (ModelState.IsValid)
             {
-                UserModel user = new UserModel
-                {
-                    UserName = model.Email,
-                    Email = model.Email,
-                    PublicUserName = model.Username
-                };
+                UserModel user = new UserModel { UserName = model.Username, Email = model.Email };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
 
@@ -82,8 +109,6 @@ namespace DndCompanion.Controllers
 
                     return View(model);
                 }
-
-
             }
 
             return View(model);
@@ -107,20 +132,23 @@ namespace DndCompanion.Controllers
                 }
                 else
                 {
-                    return RedirectToAction("ChangePassword", "Account", new { username = user.UserName });
+                    return RedirectToAction(
+                        "ChangePassword",
+                        "Account",
+                        new { email = user.Email }
+                    );
                 }
-
             }
             return View(model);
         }
 
-        public IActionResult ChangePassword(string username)
+        public IActionResult ChangePassword(string email)
         {
-            if(string.IsNullOrEmpty(username))
+            if (string.IsNullOrEmpty(email))
             {
                 return RedirectToAction("VerifyEmail", "Account");
             }
-            return View(new ChangePasswordViewModel { Email = username });
+            return View(new ChangePasswordViewModel { Email = email });
         }
 
         [HttpPost]
@@ -128,11 +156,11 @@ namespace DndCompanion.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.FindByNameAsync(model.Email);
-                if(user != null)
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user != null)
                 {
                     var result = await _userManager.RemovePasswordAsync(user);
-                    if(result.Succeeded)
+                    if (result.Succeeded)
                     {
                         result = await _userManager.AddPasswordAsync(user, model.NewPassword);
                         return RedirectToAction("Login", "Account");

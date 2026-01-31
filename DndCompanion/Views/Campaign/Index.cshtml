@@ -1,0 +1,25 @@
+@using Microsoft.AspNetCore.Authentication.Cookies
+@model DndCompanion.Models.CampaignModel
+
+@{
+    ViewData["Title"] = "Campaign";
+}
+
+<div class="container mt-4">
+    @if(Model == null)
+    {
+        <h2 class="text-center">You do not have access to this campaign or it does not exist.</h2>
+        <div class="text-center">
+            <a asp-controller="Campaigns" asp-action="Index" class="text-decoration-none mt-3">Back to Campaigns</a>
+        </div>
+        return;
+    }
+    <h1>Campaign: @Model.Name</h1>
+    <div class="text-center">
+        <a asp-controller="Campaigns" asp-action="Index" class="text-decoration-none mt-3">Back</a>
+    </div>
+    <p><strong>Description:</strong> @Model.Description</p>
+    <p><strong>Is Public:</strong> @(Model.Public ? "Yes" : "No")</p>
+    <p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</p>
+    <p><strong>Owner:</strong> @Model.Owner?.UserName</p>
+</div>

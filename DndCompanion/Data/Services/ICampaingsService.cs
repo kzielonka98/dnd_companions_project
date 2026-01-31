@@ -1,15 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using DndCompanion.Models;
 
 namespace DndCompanion.Data.Services
 {
     public interface ICampaingsService
     {
-        Task<IEnumerable<CampaignModel>> GetAllCampaignsAsync();
+        Task<IEnumerable<CampaignModel>> GetAllPublicCampaignsAsync();
 
-        Task AddCampaignAsync(CampaignModel campaign);
+        Task AddCampaignAsync(CampaignModel campaign, UserModel user);
+
+        Task<IEnumerable<CampaignModel>> GetCampaignsByUserAsync(UserModel user);
+
+        Task<CampaignModel> GetCampaignByIdAsync(int id);
+
+        Task DeleteCampaignAsync(int id);
     }
 }

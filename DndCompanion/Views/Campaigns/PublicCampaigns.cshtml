@@ -2,11 +2,11 @@
 @model IEnumerable<DndCompanion.Models.CampaignModel>
 
 @{
-    ViewData["Title"] = "Campaigns";
+    ViewData["Title"] = "Public Campaigns";
 }
 
 <div class="container mt-4">
-    <h1>Campaigns</h1>
+    <h1>Public Campaigns</h1>
     <div class="container">
         <table class="table table-bordered">
             <thead class="table-light">
@@ -16,7 +16,6 @@
                     <th>IsPublic</th>
                     <th>CreatedAt</th>
                     <th>Owner</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -28,7 +27,6 @@
                         <td>@campaign.Public</td>
                         <td>@campaign.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
                         <td>@campaign.Owner.UserName</td>
-                        <td><a asp-controller="Campaigns" asp-action="Delete" asp-route-id="@campaign.Id" class="btn btn-danger">Delete</a></td>
                     </tr>
                     
                 }

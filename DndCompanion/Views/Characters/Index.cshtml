@@ -1,0 +1,48 @@
+@using Microsoft.AspNetCore.Authentication.Cookies
+@model IEnumerable<DndCompanion.Models.CharacterModel>
+
+@{
+    ViewData["Title"] = "Characters";
+}
+
+<div class="container mt-4">
+    <h1>Characters</h1>
+    <div class="container">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Picture</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>CreatedAt</th>
+                    <th>Owner</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var character in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (character.AvatarImage != null && character.AvatarImage.Length > 0)
+                            {
+                                <img src="data:image/jpeg;base64,@Convert.ToBase64String(character.AvatarImage)" alt="Avatar" class="img-thumbnail" width="100" height="100" />
+                            }
+                        </td>
+                        <td><a asp-controller="Character" asp-action="Index" asp-route-id="@character.Id">@character.Name</a></td>
+                        <td>@character.Description</td>
+                        <td>@character.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>@character.Owner.UserName</td>
+                        <td><a asp-controller="Characters" asp-action="Delete" asp-route-id="@character.Id" class="btn btn-danger">Delete</a></td>
+                    </tr>
+                    
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="float-center mb-3">
+        <a class="btn btn-primary" asp-controller="Characters" asp-action="Create">
+            Create New Character
+        </a>
+    </div>
+</div>

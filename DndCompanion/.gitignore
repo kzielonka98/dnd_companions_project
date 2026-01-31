@@ -376,6 +376,9 @@ healthchecksdb
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
 
+# Ignorne Entity Framework Core Migrations folder
+Migrations/
+
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
@@ -482,3 +485,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# ToDo
+ToDo.md

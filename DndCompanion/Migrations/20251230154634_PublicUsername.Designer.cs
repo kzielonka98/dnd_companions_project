@@ -4,6 +4,7 @@ using DndCompanion.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DndCompanion.Migrations
 {
     [DbContext(typeof(DndCompanionContext))]
-    partial class DndCompanionContextModelSnapshot : ModelSnapshot
+    [Migration("20251230154634_PublicUsername")]
+    partial class PublicUsername
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,6 +37,7 @@ namespace DndCompanion.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)");
 
@@ -42,16 +46,10 @@ namespace DndCompanion.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
                     b.Property<bool>("Public")
                         .HasColumnType("tinyint(1)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OwnerId");
 
                     b.ToTable("Campaigns");
                 });
@@ -97,6 +95,9 @@ namespace DndCompanion.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("PublicUserName")
+                        .HasColumnType("longtext");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
@@ -252,17 +253,6 @@ namespace DndCompanion.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("DndCompanion.Models.CampaignModel", b =>
-                {
-                    b.HasOne("DndCompanion.Models.UserModel", "Owner")
-                        .WithMany("OwnedCampaings")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -312,11 +302,6 @@ namespace DndCompanion.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("DndCompanion.Models.UserModel", b =>
-                {
-                    b.Navigation("OwnedCampaings");
                 });
 #pragma warning restore 612, 618
         }

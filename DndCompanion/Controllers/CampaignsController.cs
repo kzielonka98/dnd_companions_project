@@ -1,12 +1,11 @@
-using DndCompanion.Data;
 using DndCompanion.Data.Services;
 using DndCompanion.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DndCompanion.Controllers
 {
-    public class CampaignsController : Controller
+    public class CampaignsController : CommonController
     {
         private readonly ICampaingsService _campaingsService;
 
@@ -15,26 +14,66 @@ namespace DndCompanion.Controllers
             _campaingsService = campaingsService;
         }
 
+        [Authorize]
         public async Task<IActionResult> Index()
         {
-            var campaigns = await _campaingsService.GetAllCampaignsAsync();
+            var user = await GetCurrentUser();
+
+            IEnumerable<CampaignModel> campaigns = await _campaingsService.GetCampaignsByUserAsync(
+                user
+            );
             return View(campaigns);
         }
 
+        public async Task<IActionResult> PublicCampaigns()
+        {
+            IEnumerable<CampaignModel> campaigns =
+                await _campaingsService.GetAllPublicCampaignsAsync();
+            return View(campaigns);
+        }
+
+        [Authorize]
         public IActionResult Create()
         {
             return View();
         }
 
+        [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Create(CampaignModel campaign)
+        public async Task<IActionResult> Create(CampaignModel model)
         {
-            if (ModelState.IsValid)
+            UserModel user = await GetCurrentUser();
+
+            if (user == null)
             {
-                await _campaingsService.AddCampaignAsync(campaign);
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Something went wrong. Please try again later."
+                );
+                return View(model);
+            }
+
+            model.Owner = user;
+            model.OwnerId = user.Id;
+
+            await _campaingsService.AddCampaignAsync(model, user);
+            return RedirectToAction("Index");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var user = await GetCurrentUser();
+            IEnumerable<CampaignModel> campaigns = await _campaingsService.GetCampaignsByUserAsync(
+                user
+            );
+            if (!campaigns.Any(c => c.Id == id))
+            {
                 return RedirectToAction("Index");
             }
-            return View(campaign);
+
+            await _campaingsService.DeleteCampaignAsync(id);
+            return RedirectToAction("Index");
         }
     }
 }

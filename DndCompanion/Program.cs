@@ -31,6 +31,7 @@ builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<ICampaingsService, CampaingsService>();
+builder.Services.AddScoped<ICharactersService, CharactersService>();
 
 var app = builder.Build();
 

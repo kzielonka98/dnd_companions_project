@@ -1,0 +1,32 @@
+@using DndCompanion.ViewModels;
+@model CreateCharacterViewModel
+
+<div class="container">
+    <h2>Create New Character</h2>
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label asp-for="Name" class="form-label">Name</label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">Description</label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="AvatarImage" class="form-label">Avatar Image</label>
+            <input asp-for="AvatarImage" class="form-control" type="file" />
+            <div class="form-text">Maximum file size: 10MB, works best with square images</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Character</button>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
+    }
+}

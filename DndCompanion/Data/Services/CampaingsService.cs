@@ -54,7 +54,6 @@ namespace DndCompanion.Data.Services
             var campaign = await _context
                 .Campaigns.Include(c => c.Owner)
                 .Where(c => c.Id == id)
-                .Where(c => c.Id == id)
                 .FirstOrDefaultAsync();
             return campaign;
         }

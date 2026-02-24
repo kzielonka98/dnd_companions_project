@@ -1,0 +1,30 @@
+@using Microsoft.AspNetCore.Authentication.Cookies
+@model DndCompanion.Models.CharacterModel
+
+@{
+    ViewData["Title"] = "Character";
+}
+
+<div class="container mt-4">
+    @if(Model == null)
+    {
+        <h2 class="text-center">You do not have access to this character or it does not exist.</h2>
+        <div class="text-center">
+            <a asp-controller="Characters" asp-action="Index" class="text-decoration-none mt-3">Back to Characters</a>
+        </div>
+        return;
+    }
+    <h1>Character: @Model.Name</h1>
+
+    @if (Model.AvatarImage != null && Model.AvatarImage.Length > 0)
+    {
+        <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.AvatarImage)" alt="Avatar" class="img-thumbnail mb-3" width="200" height="200" />
+    }
+
+    <p><strong>Description:</strong> @Model.Description</p>
+    <p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</p>
+    <p><strong>Owner:</strong> @Model.Owner?.UserName</p>
+    <div class="text-center">
+        <a asp-controller="Characters" asp-action="Index" class="text-decoration-none mt-3">Back</a>
+    </div>
+</div>

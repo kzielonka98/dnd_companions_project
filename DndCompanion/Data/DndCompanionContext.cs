@@ -19,8 +19,16 @@ namespace DndCompanion.Data
                 .WithMany(u => u.OwnedCampaings)
                 .HasForeignKey(c => c.OwnerId)
                 .IsRequired();
+
+            builder
+                .Entity<CharacterModel>()
+                .HasOne(c => c.Owner)
+                .WithMany(u => u.OwnedCharacters)
+                .HasForeignKey(c => c.OwnerId)
+                .IsRequired();
         }
 
         public DbSet<CampaignModel> Campaigns { get; set; }
+        public DbSet<CharacterModel> Characters { get; set; }
     }
 }

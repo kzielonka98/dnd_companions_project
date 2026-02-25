@@ -1,3 +1,4 @@
+using System.Reflection.PortableExecutable;
 using DndCompanion.Data.Services;
 using DndCompanion.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -22,6 +23,9 @@ namespace DndCompanion.Controllers
             IEnumerable<CampaignModel> campaigns = await _campaingsService.GetCampaignsByUserAsync(
                 user
             );
+            
+            ViewBag.MaxNumberOfCampaignsPerUser = Constants.MaxNumberOfCampaignsPerUser;
+
             return View(campaigns);
         }
 
@@ -51,6 +55,11 @@ namespace DndCompanion.Controllers
                     "Something went wrong. Please try again later."
                 );
                 return View(model);
+            }
+            var UserCampaigns = await _campaingsService.GetCampaignsByUserAsync(user);
+            if(UserCampaigns.Count() >= Constants.MaxNumberOfCampaignsPerUser)
+            {
+                return View("Index");
             }
 
             model.Owner = user;

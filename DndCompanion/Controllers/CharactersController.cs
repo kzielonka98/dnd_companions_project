@@ -27,6 +27,9 @@ namespace DndCompanion.Controllers
 
             IEnumerable<CharacterModel> characters =
                 await _charactersService.GetCharactersByUserAsync(user);
+
+            ViewBag.MaxNumberOfCharactersPerUser = Constants.MaxNumberOfCharactersPerUser;
+
             return View(characters);
         }
 
@@ -49,6 +52,13 @@ namespace DndCompanion.Controllers
                 );
                 return View(model);
             }
+
+            var UserCharacters = await _charactersService.GetCharactersByUserAsync(user);
+            if(UserCharacters.Count() >= Constants.MaxNumberOfCharactersPerUser)
+            {
+                return View("Index");
+            }
+
             CharacterModel character = new CharacterModel
             {
                 Name = model.Name,

@@ -6,7 +6,7 @@
 }
 
 <div class="container mt-4">
-    <h1>Characters</h1>
+    <h1>Characters @Model.Count()/@ViewBag.MaxNumberOfCharactersPerUser</h1>
     <div class="container">
         <table class="table table-bordered">
             <thead class="table-light">
@@ -41,8 +41,18 @@
         </table>
     </div>
     <div class="float-center mb-3">
-        <a class="btn btn-primary" asp-controller="Characters" asp-action="Create">
-            Create New Character
-        </a>
+        @if(Model.Count() < ViewBag.MaxNumberOfCharactersPerUser)
+        {
+            <a class="btn btn-primary" asp-controller="Characters" asp-action="Create">
+                Create New Character
+            </a>
+        }
+        else
+        {
+            <a class="btn btn-primary disabled" asp-controller="Characters" asp-action="Create">
+                Create New Character
+            </a>
+            <p class="text-danger">You have reached the maximum number of characters. Please delete an existing character before creating a new one.</p>
+        }
     </div>
 </div>

@@ -15,7 +15,6 @@ namespace DndCompanion.Data.Services
         public async Task AddCampaignAsync(CampaignModel campaign, UserModel user)
         {
             _context.Campaigns.Add(campaign);
-
             await _context.SaveChangesAsync();
         }
 

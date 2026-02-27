@@ -54,9 +54,9 @@ namespace DndCompanion.Controllers
             }
 
             var UserCharacters = await _charactersService.GetCharactersByUserAsync(user);
-            if(UserCharacters.Count() >= Constants.MaxNumberOfCharactersPerUser)
+            if (UserCharacters.Count() >= Constants.MaxNumberOfCharactersPerUser)
             {
-                return View("Index");
+                return RedirectToAction("Index");
             }
 
             CharacterModel character = new CharacterModel

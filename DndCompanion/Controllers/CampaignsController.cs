@@ -20,10 +20,9 @@ namespace DndCompanion.Controllers
         {
             var user = await GetCurrentUser();
 
-            IEnumerable<CampaignModel> campaigns = await _campaingsService.GetCampaignsByUserAsync(
-                user
-            );
-            
+            IEnumerable<CampaignModel> campaigns =
+                await _campaingsService.GetOwnedCampaignsByUserAsync(user);
+
             ViewBag.MaxNumberOfCampaignsPerUser = Constants.MaxNumberOfCampaignsPerUser;
 
             return View(campaigns);
@@ -56,15 +55,11 @@ namespace DndCompanion.Controllers
                 );
                 return View(model);
             }
-            var UserCampaigns = await _campaingsService.GetCampaignsByUserAsync(user);
-            if(UserCampaigns.Count() >= Constants.MaxNumberOfCampaignsPerUser)
+            var UserCampaigns = await _campaingsService.GetOwnedCampaignsByUserAsync(user);
+            if (UserCampaigns.Count() >= Constants.MaxNumberOfCampaignsPerUser)
             {
-                return View("Index");
+                return RedirectToAction("Index");
             }
-
-            model.Owner = user;
-            model.OwnerId = user.Id;
-
             await _campaingsService.AddCampaignAsync(model, user);
             return RedirectToAction("Index");
         }
@@ -73,9 +68,8 @@ namespace DndCompanion.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var user = await GetCurrentUser();
-            IEnumerable<CampaignModel> campaigns = await _campaingsService.GetCampaignsByUserAsync(
-                user
-            );
+            IEnumerable<CampaignModel> campaigns =
+                await _campaingsService.GetOwnedCampaignsByUserAsync(user);
             if (!campaigns.Any(c => c.Id == id))
             {
                 return RedirectToAction("Index");

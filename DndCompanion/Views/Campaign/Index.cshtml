@@ -1,6 +1,8 @@
 @using Microsoft.AspNetCore.Authentication.Cookies
+@using System.Diagnostics.Eventing.Reader
 @model DndCompanion.Models.CampaignModel
-
+@using Microsoft.AspNetCore.Identity;
+@inject SignInManager<UserModel> SignInManager
 @{
     ViewData["Title"] = "Campaign";
 }
@@ -21,5 +23,55 @@
     <p><strong>Description:</strong> @Model.Description</p>
     <p><strong>Is Public:</strong> @(Model.Public ? "Yes" : "No")</p>
     <p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</p>
-    <p><strong>Owner:</strong> @Model.Owner?.UserName</p>
+    <p><strong>Owner:</strong> @Model.UsersCampaigns.Where(x => x.IsOwner).FirstOrDefault()?.User?.UserName</p>
+    @if(SignInManager.IsSignedIn(User) && Model.UsersCampaigns.Any(x => x.User.UserName == User.Identity.Name && x.IsOwner))
+    {
+    <div class="container mt-4">
+        <h2>Players</h2>
+        <p><strong>Number of players:</strong> @Model.UsersCampaigns.Count(x => !x.IsOwner)/@ViewBag.MaxNumberOfPlayersPerCampaign</p>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(Model.UsersCampaigns.Count(x => !x.IsOwner) == 0)
+                {
+                    <tr>
+                        <td colspan="2" class="text-center">No players added to this campaign yet.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var userCampaign in Model.UsersCampaigns.Where(x => !x.IsOwner))
+                    {
+                        <tr>
+                            <td>@userCampaign.User.UserName</td>
+                            <td>delete user</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+        <div class="float-center mb-3">
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            @if(Model.UsersCampaigns.Count(x => !x.IsOwner) < ViewBag.MaxNumberOfPlayersPerCampaign)
+            {
+                <a class="btn btn-primary" asp-controller="Campaign" asp-action="AddUser" asp-route-campaignId="@Model.Id">
+                    Add User
+                </a>
+            }
+            else
+            {
+                <button class="btn btn-primary disabled"">
+                    Create New Campaign
+                </button>
+                <p class="text-danger">You have reached the maximum number of campaigns. Please delete an existing campaign before creating a new one.</p>
+            }
+        </div>
+    </div>
+    }
+
 </div>

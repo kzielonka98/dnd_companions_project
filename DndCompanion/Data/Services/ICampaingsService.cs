@@ -8,7 +8,9 @@ namespace DndCompanion.Data.Services
 
         Task AddCampaignAsync(CampaignModel campaign, UserModel user);
 
-        Task<IEnumerable<CampaignModel>> GetCampaignsByUserAsync(UserModel user);
+        Task AddPlayerToCampaignAsync(CampaignModel campaign, UserModel user);
+
+        Task<IEnumerable<CampaignModel>> GetOwnedCampaignsByUserAsync(UserModel user);
 
         Task<CampaignModel> GetCampaignByIdAsync(int id);
 

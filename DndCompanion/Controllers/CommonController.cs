@@ -16,5 +16,12 @@ namespace DndCompanion.Controllers
                 .RequestServices.GetService<UserManager<UserModel>>()
                 .FindByNameAsync(User.Identity.Name);
         }
+
+        public async Task<UserModel> GetUserByUsername(string username)
+        {
+            return await HttpContext
+                .RequestServices.GetService<UserManager<UserModel>>()
+                .FindByNameAsync(username);
+        }
     }
 }

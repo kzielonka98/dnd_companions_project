@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using DndCompanion.Data.Services;
 using DndCompanion.Models;
 using DndCompanion.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace DndCompanion.Controllers
 {
@@ -27,6 +22,9 @@ namespace DndCompanion.Controllers
 
             IEnumerable<CharacterModel> characters =
                 await _charactersService.GetCharactersByUserAsync(user);
+
+            ViewBag.MaxNumberOfCharactersPerUser = Constants.MaxNumberOfCharactersPerUser;
+
             return View(characters);
         }
 
@@ -49,6 +47,13 @@ namespace DndCompanion.Controllers
                 );
                 return View(model);
             }
+
+            var UserCharacters = await _charactersService.GetCharactersByUserAsync(user);
+            if (UserCharacters.Count() >= Constants.MaxNumberOfCharactersPerUser)
+            {
+                return RedirectToAction("Index");
+            }
+
             CharacterModel character = new CharacterModel
             {
                 Name = model.Name,

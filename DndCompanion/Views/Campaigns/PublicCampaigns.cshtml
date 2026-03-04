@@ -26,7 +26,7 @@
                         <td>@campaign.Description</td>
                         <td>@campaign.Public</td>
                         <td>@campaign.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                        <td>@campaign.Owner.UserName</td>
+                        <td>@campaign.UsersCampaigns.Where(x=> x.IsOwner).FirstOrDefault()?.User?.UserName</td>
                     </tr>
                     
                 }

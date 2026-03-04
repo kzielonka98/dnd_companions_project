@@ -14,4 +14,6 @@ TODO:
 7. Możliwośc dodawania graczy do kampani przez ownera. (max 5). Dodawanie odbywa się przez wysłanie zaproszenia do innego użytkownika. 
     Kampanie do których użytkownik został dodany pojawiąją się w jego Kampaniach.
 
+    1. time to add some tests
+
 8. Możliwośc dodawania postaci przez graczy do kampani. Każdy dodany uzytkownik (oraz owner) mogą dodać do kampani po jednej postaci. Postać może być w wielu różnych kampaniach. W przeglądarce swoich postaci widać do jakich kampanii nalezy psotać. W widoku kampani widać listę podstaci.

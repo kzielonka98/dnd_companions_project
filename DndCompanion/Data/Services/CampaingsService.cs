@@ -27,6 +27,19 @@ namespace DndCompanion.Data.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task DeleteCampaignAsync(int id)
+        {
+            var campaign = await _context.Campaigns.FindAsync(id);
+            if (campaign != null)
+            {
+                _context.UserCampaigns.RemoveRange(
+                    _context.UserCampaigns.Where(uc => uc.CampaignId == id)
+                );
+                _context.Campaigns.Remove(campaign);
+                await _context.SaveChangesAsync();
+            }
+        }
+
         public async Task AddPlayerToCampaignAsync(CampaignModel campaign, UserModel user)
         {
             UserCampaignModel userCampaign = new()
@@ -39,6 +52,18 @@ namespace DndCompanion.Data.Services
             };
             _context.UserCampaigns.Add(userCampaign);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteUserFromCampaignAsync(int campaignId, string userId)
+        {
+            var userCampaign = await _context.UserCampaigns
+                .Where(uc => uc.CampaignId == campaignId && uc.UserId == userId)
+                .FirstOrDefaultAsync();
+            if (userCampaign != null)
+            {
+                _context.UserCampaigns.Remove(userCampaign);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<IEnumerable<CampaignModel>> GetAllPublicCampaignsAsync()
@@ -57,21 +82,20 @@ namespace DndCompanion.Data.Services
                 .Users.Where(u => u.Id == user.Id)
                 .SelectMany(u => u.Campaigns)
                 .Where(c => c.UsersCampaigns.Any(uc => uc.UserId == user.Id && uc.IsOwner))
+                .Include(c => c.Users)
                 .ToListAsync();
             return campaigns;
         }
 
-        public async Task DeleteCampaignAsync(int id)
+        public async Task<IEnumerable<CampaignModel>> GetJoinedCampaignsByUserAsync(UserModel user)
         {
-            var campaign = await _context.Campaigns.FindAsync(id);
-            if (campaign != null)
-            {
-                _context.UserCampaigns.RemoveRange(
-                    _context.UserCampaigns.Where(uc => uc.CampaignId == id)
-                );
-                _context.Campaigns.Remove(campaign);
-                await _context.SaveChangesAsync();
-            }
+            var campaigns = await _context
+                .Users.Where(u => u.Id == user.Id)
+                .SelectMany(u => u.Campaigns)
+                .Where(c => c.UsersCampaigns.Any(uc => uc.UserId == user.Id && !uc.IsOwner))
+                .Include(c => c.Users)
+                .ToListAsync();
+            return campaigns;
         }
 
         public async Task<CampaignModel> GetCampaignByIdAsync(int id)

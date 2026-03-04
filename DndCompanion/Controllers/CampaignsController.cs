@@ -1,4 +1,3 @@
-using System.Reflection.PortableExecutable;
 using DndCompanion.Data.Services;
 using DndCompanion.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -20,10 +19,12 @@ namespace DndCompanion.Controllers
         {
             var user = await GetCurrentUser();
 
+            ViewBag.MaxNumberOfCampaignsPerUser = Constants.MaxNumberOfCampaignsPerUser;
+
             IEnumerable<CampaignModel> campaigns =
                 await _campaingsService.GetOwnedCampaignsByUserAsync(user);
 
-            ViewBag.MaxNumberOfCampaignsPerUser = Constants.MaxNumberOfCampaignsPerUser;
+            campaigns = campaigns.Concat(await _campaingsService.GetJoinedCampaignsByUserAsync(user));
 
             return View(campaigns);
         }

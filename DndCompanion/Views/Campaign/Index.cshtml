@@ -5,6 +5,14 @@
 @inject SignInManager<UserModel> SignInManager
 @{
     ViewData["Title"] = "Campaign";
+    bool isSignedIn = SignInManager.IsSignedIn(User);
+    int numberOfPlayers = 0;
+    bool isOwner = false;
+    if(Model != null)
+    {
+        numberOfPlayers = Model.UsersCampaigns.Count(x => !x.IsOwner);   
+        isOwner = isSignedIn && Model.UsersCampaigns.Any(x => x.User.UserName == User.Identity.Name && x.IsOwner);
+    }
 }
 
 <div class="container mt-4">
@@ -24,7 +32,9 @@
     <p><strong>Is Public:</strong> @(Model.Public ? "Yes" : "No")</p>
     <p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</p>
     <p><strong>Owner:</strong> @Model.UsersCampaigns.Where(x => x.IsOwner).FirstOrDefault()?.User?.UserName</p>
-    @if(SignInManager.IsSignedIn(User) && Model.UsersCampaigns.Any(x => x.User.UserName == User.Identity.Name && x.IsOwner))
+    
+    <!-- Only show player list if user is signed in and part of the campaign -->
+    @if(isSignedIn && Model.UsersCampaigns.Any(x => x.User.UserName == User.Identity.Name))
     {
     <div class="container mt-4">
         <h2>Players</h2>
@@ -33,11 +43,14 @@
             <thead class="table-light">
                 <tr>
                     <th>Name</th>
+                    @if(isOwner)
+                    {
                     <th>Actions</th>
+                    }
                 </tr>
             </thead>
             <tbody>
-                @if(Model.UsersCampaigns.Count(x => !x.IsOwner) == 0)
+                @if(numberOfPlayers == 0)
                 {
                     <tr>
                         <td colspan="2" class="text-center">No players added to this campaign yet.</td>
@@ -49,15 +62,21 @@
                     {
                         <tr>
                             <td>@userCampaign.User.UserName</td>
-                            <td>delete user</td>
+
+                            @if(isOwner)
+                            {
+                            <td><a asp-controller="Campaign" asp-action="DeleteUser" asp-route-userId="@userCampaign.UserId" asp-route-campaignId="@userCampaign.CampaignId" class="btn btn-danger">Delete</a></td>
+                            }
                         </tr>
                     }
                 }
             </tbody>
         </table>
+        @if(isOwner)
+        {
         <div class="float-center mb-3">
             @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-            @if(Model.UsersCampaigns.Count(x => !x.IsOwner) < ViewBag.MaxNumberOfPlayersPerCampaign)
+            @if(numberOfPlayers < ViewBag.MaxNumberOfPlayersPerCampaign)
             {
                 <a class="btn btn-primary" asp-controller="Campaign" asp-action="AddUser" asp-route-campaignId="@Model.Id">
                     Add User
@@ -71,6 +90,7 @@
                 <p class="text-danger">You have reached the maximum number of campaigns. Please delete an existing campaign before creating a new one.</p>
             }
         </div>
+        }
     </div>
     }
 

@@ -2,7 +2,6 @@ using DndCompanion.Data.Services;
 using DndCompanion.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace DndCompanion.Controllers
 {
@@ -33,6 +32,10 @@ namespace DndCompanion.Controllers
                 currentUser
             );
 
+            CurrentUserCampaigns = CurrentUserCampaigns.Concat(
+                await _campaingsService.GetJoinedCampaignsByUserAsync(currentUser)
+            );
+
             if (campaign.Public || CurrentUserCampaigns.Any(c => c.Id == id))
             {
                 return View(campaign);
@@ -57,10 +60,11 @@ namespace DndCompanion.Controllers
                 return RedirectToAction("Index", "Campaigns");
             }
 
+            ViewBag.CampaignId = campaignId;
+
             if (userModel == null || string.IsNullOrEmpty(userModel.UserName))
             {
                 ModelState.AddModelError(string.Empty, "Please enter a valid username.");
-                ViewBag.CampaignId = campaignId;
                 return View(userModel);
             }
 
@@ -69,14 +73,12 @@ namespace DndCompanion.Controllers
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "User not found.");
-                ViewBag.CampaignId = campaignId;
                 return View(userModel);
             }
 
             if (user == await GetCurrentUser())
             {
                 ModelState.AddModelError(string.Empty, "You cannot add yourself to the campaign.");
-                ViewBag.CampaignId = campaignId;
                 return View(userModel);
             }
 
@@ -90,20 +92,43 @@ namespace DndCompanion.Controllers
             if (campaign.UsersCampaigns.Any(x => x.UserId == user.Id))
             {
                 ModelState.AddModelError(string.Empty, "This user is already part of the campaign.");
-                ViewBag.CampaignId = campaignId;
                 return View(userModel);
             }
 
             if (campaign.UsersCampaigns.Count(x => !x.IsOwner) >= Constants.MaxNumberOfPlayersPerCampaign)
             {
                 ModelState.AddModelError(string.Empty, "This campaign has reached the maximum number of players.");
-                ViewBag.CampaignId = campaignId;
                 return RedirectToAction("Index", new { id = campaignId });
             }
 
             await _campaingsService.AddPlayerToCampaignAsync(campaign, user);
 
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", new { id = campaignId });
+        }
+
+        [Authorize]
+        public async Task<IActionResult> DeleteUser(string userId, int campaignId)
+        {
+            var currentUser = await GetCurrentUser();
+            var ownedCampaings = await _campaingsService.GetOwnedCampaignsByUserAsync(currentUser);
+
+            var campaign = ownedCampaings.First(c => c.Id == campaignId);
+
+            if (campaign == null)
+            {
+                ModelState.AddModelError(string.Empty, "You are not the owner of this campaign.");
+                return RedirectToAction("Index", new { id = campaignId });
+            }
+
+            if (campaign.UsersCampaigns.All(x => x.UserId != userId))
+            {
+                ModelState.AddModelError(string.Empty, "This user is not part of the campaign.");
+                return RedirectToAction("Index", new { id = campaignId });
+            }
+
+            await _campaingsService.DeleteUserFromCampaignAsync(campaignId, userId);
+
+            return RedirectToAction("Index", new { id = campaignId });
         }
     }
 }

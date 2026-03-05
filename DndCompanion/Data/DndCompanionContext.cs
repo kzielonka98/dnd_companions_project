@@ -14,6 +14,11 @@ namespace DndCompanion.Data
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<UserModel>()
+                .HasMany(x => x.Campaigns)
+                .WithMany(x => x.Users)
+                .UsingEntity<UserCampaignModel>();
+
             builder
                 .Entity<UserModel>()
                 .HasMany(x => x.Campaigns)
@@ -53,5 +58,6 @@ namespace DndCompanion.Data
         public DbSet<CharacterModel> Characters { get; set; }
         public DbSet<UserCampaignModel> UserCampaigns { get; set; }
         public DbSet<CampaignInvitationModel> CampaignInvitations { get; set; }
+
     }
 }

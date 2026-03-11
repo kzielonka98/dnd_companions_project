@@ -1,3 +1,4 @@
+using DndCompanion.Controllers;
 using DndCompanion.Data;
 using DndCompanion.Data.Services;
 using DndCompanion.Models;
@@ -8,14 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-        
-string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<DndCompanionContext>(
-    options => options.UseMySql(connectionString,
-    ServerVersion.AutoDetect(connectionString)
-));
 
-builder.Services.AddIdentity<UserModel, IdentityRole>(options =>
+string? connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<DndCompanionContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+);
+
+builder
+    .Services.AddIdentity<UserModel, IdentityRole>(options =>
     {
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = true;
@@ -46,15 +47,10 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
-
 app.UseAuthorization();
 
 app.MapStaticAssets();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

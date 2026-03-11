@@ -6,7 +6,7 @@ namespace DndCompanion.Controllers
 {
     public class CommonController : Controller
     {
-        public async Task<UserModel> GetCurrentUser()
+        protected async Task<UserModel> GetCurrentUser()
         {
             if (User == null || !User.Identity.IsAuthenticated)
             {
@@ -17,7 +17,7 @@ namespace DndCompanion.Controllers
                 .FindByNameAsync(User.Identity.Name);
         }
 
-        public async Task<UserModel> GetUserByUsername(string username)
+        protected async Task<UserModel> GetUserByUsername(string username)
         {
             return await HttpContext
                 .RequestServices.GetService<UserManager<UserModel>>()

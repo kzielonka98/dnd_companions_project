@@ -14,7 +14,8 @@ namespace DndCompanion.Data
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<UserModel>()
+            builder
+                .Entity<UserModel>()
                 .HasMany(x => x.Campaigns)
                 .WithMany(x => x.Users)
                 .UsingEntity<UserCampaignModel>();
@@ -51,13 +52,11 @@ namespace DndCompanion.Data
                 .WithMany(u => u.SentInvitations as ICollection<CampaignInvitationModel>)
                 .HasForeignKey(m => m.SenderId)
                 .IsRequired();
-            
         }
 
         public DbSet<CampaignModel> Campaigns { get; set; }
         public DbSet<CharacterModel> Characters { get; set; }
         public DbSet<UserCampaignModel> UserCampaigns { get; set; }
         public DbSet<CampaignInvitationModel> CampaignInvitations { get; set; }
-
     }
 }

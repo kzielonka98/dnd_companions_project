@@ -1,0 +1,70 @@
+@using Microsoft.AspNetCore.Authentication.Cookies
+@model IEnumerable<DndCompanion.Models.SystemMessages.CampaingInvitation.CampaignInvitationModel>
+
+@{
+    ViewData["Title"] = "Campaing Invitations";
+
+    var sentCampaignInvitations = Model.Where(i => i.Sender.UserName == User.Identity.Name);
+    var receivedCampaignInvitations = Model.Where(i => i.Receiver.UserName == User.Identity.Name);
+}
+
+<div class="container mt-4">
+    <h1>Received campaing invitations</h1>
+    <div class="container">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Sender</th>
+                    <th>Campaing</th>
+                    <th>Sent</th>
+                    <th>Content</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var invitation in receivedCampaignInvitations)
+                {
+                    <tr>
+                        <td>@invitation.Sender.UserName</td>
+                        <td><a asp-controller="Campaign" asp-action="Index" asp-route-id="@invitation.Campaign.Id">@invitation.Campaign.Name</a></td>
+                        <td>@invitation.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>@invitation.Content</td>
+                        <td>
+                            <a class="btn btn-success" asp-controller="Campaign" asp-action="AcceptInvitation" asp-route-invitationId="@invitation.Id">Accept</a>
+                            <a class="btn btn-danger" asp-controller="Campaign" asp-action="CancelInvitation" asp-route-invitationId="@invitation.Id">Decline</a>
+                        </td>
+                    </tr>                 
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <h1>Sent campaing invitations</h1>
+    <div class="container">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Receiver</th>
+                    <th>Campaing</th>
+                    <th>Sent</th>
+                    <th>Content</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var invitation in sentCampaignInvitations)
+                {
+                    <tr>
+                        <td>@invitation.Receiver.UserName</td>
+                        <td><a asp-controller="Campaign" asp-action="Index" asp-route-id="@invitation.Campaign.Id">@invitation.Campaign.Name</a></td>
+                        <td>@invitation.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>@invitation.Content</td>
+                        <td>
+                            <a class="btn btn-danger" asp-controller="Campaign" asp-action="CancelInvitation" asp-route-invitationId="@invitation.Id">Cancel</a>
+                        </td>
+                    </tr>                 
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

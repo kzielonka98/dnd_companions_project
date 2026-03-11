@@ -43,10 +43,7 @@
             <thead class="table-light">
                 <tr>
                     <th>Name</th>
-                    @if(isOwner)
-                    {
                     <th>Actions</th>
-                    }
                 </tr>
             </thead>
             <tbody>
@@ -66,6 +63,10 @@
                             @if(isOwner)
                             {
                             <td><a asp-controller="Campaign" asp-action="DeleteUser" asp-route-userId="@userCampaign.UserId" asp-route-campaignId="@userCampaign.CampaignId" class="btn btn-danger">Delete</a></td>
+                            }
+                            else if(userCampaign.User.UserName == User.Identity.Name)
+                            {
+                                <td><a asp-controller="Campaign" asp-action="LeaveCampaign" asp-route-campaignId="@userCampaign.CampaignId" class="btn btn-danger">Leave Campaign</a></td>
                             }
                         </tr>
                     }

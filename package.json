@@ -1,0 +1,23 @@
+{
+  "name": "dnd_companions_project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kzielonka98/dnd_companions_project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kzielonka98/dnd_companions_project/issues"
+  },
+  "homepage": "https://github.com/kzielonka98/dnd_companions_project#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.5.0"
+  }
+}

@@ -18,8 +18,12 @@ namespace DndCompanion.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public ICollection<UserModel> Users { get; set; } = new List<UserModel>();
+        public ICollection<UserModel> Users { get; set; } = [];
 
-        public ICollection<UserCampaignModel> UsersCampaigns { get; set; } = new List<UserCampaignModel>();
+        public ICollection<UserCampaignModel> UsersCampaigns { get; set; } = [];
+
+        public ICollection<CharacterModel> Characters { get; set; } = [];
+
+        public ICollection<CharacterCampaignModel> CharacterCampaigns { get; set; } = [];
     }
 }

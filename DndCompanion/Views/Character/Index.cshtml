@@ -1,8 +1,16 @@
 @using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Identity;
+@inject SignInManager<UserModel> SignInManager
 @model DndCompanion.Models.CharacterModel
 
 @{
     ViewData["Title"] = "Character";
+    bool isOwner = false;
+    bool isSignedIn = SignInManager.IsSignedIn(User);
+    if(Model != null)
+    {
+        isOwner = isSignedIn && Model.Owner.UserName == User.Identity.Name;
+    }
 }
 
 <div class="container mt-4">
@@ -27,4 +35,35 @@
     <div class="text-center">
         <a asp-controller="Characters" asp-action="Index" class="text-decoration-none mt-3">Back</a>
     </div>
+    @if(isOwner && Model.CharacterCampaigns.Count()>0)
+    {
+        <div>
+        <h2>Assigned to campaings</h2>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>IsPublic</th>
+                    <th>CreatedAt</th>
+                    <th>Owner</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var characterCampaign in Model.CharacterCampaigns)
+                {
+                    <tr>
+                        <td><a asp-controller="Campaign" asp-action="Index" asp-route-id="@characterCampaign.Campaign.Id">@characterCampaign.Campaign.Name</a></td>
+                        <td>@characterCampaign.Campaign.Description</td>
+                        <td>@characterCampaign.Campaign.Public</td>
+                        <td>@characterCampaign.Campaign.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>@characterCampaign.Campaign.UsersCampaigns.Where(x => x.IsOwner).FirstOrDefault()?.User?.UserName</td>
+                        <td><a asp-controller="Campaign" asp-action="UnassignCharacter" asp-route-campaignId="@characterCampaign.CampaignId" asp-route-characterId="@Model.Id" class="btn btn-danger btn-sm ms-3">Unassign Character</a></td>
+                    </tr>       
+                }
+            </tbody>
+        </table>
+        </div>
+    }
 </div>

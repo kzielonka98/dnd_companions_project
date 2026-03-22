@@ -32,8 +32,12 @@ namespace DndCompanion.Data.Services
         public async Task<CharacterModel> GetCharacterByIdAsync(int id)
         {
             var character = await _context
-                .Characters.Include(c => c.Owner)
+                .Characters
                 .Where(c => c.Id == id)
+                .Include(c => c.Owner)
+                .Include(c => c.CharacterCampaigns)
+                    .ThenInclude(cc => cc.Campaign)
+                        .ThenInclude(c => c.Users)
                 .FirstOrDefaultAsync();
             return character;
         }

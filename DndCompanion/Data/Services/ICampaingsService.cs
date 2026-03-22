@@ -1,16 +1,32 @@
 using DndCompanion.Models;
+using DndCompanion.Models.SystemMessages.CampaingInvitation;
 
 namespace DndCompanion.Data.Services
 {
     public interface ICampaingsService
     {
         Task<IEnumerable<CampaignModel>> GetAllPublicCampaignsAsync();
-        
+
         Task AddCampaignAsync(CampaignModel campaign, UserModel user);
 
         Task DeleteCampaignAsync(int id);
 
         Task AddPlayerToCampaignAsync(CampaignModel campaign, UserModel user);
+
+        Task CreateCampaingInvitationAsync(
+            CampaignModel campaign,
+            UserModel sender,
+            UserModel receiver,
+            string content = null
+        );
+
+        Task<IEnumerable<CampaignInvitationModel>> GetReceivedCampaignInvitationsForUserAsync(
+            UserModel user
+        );
+
+        Task<IEnumerable<CampaignInvitationModel>> GetSentCampaignInvitationsForUserAsync(
+            UserModel user
+        );
 
         Task DeleteUserFromCampaignAsync(int campaignId, string userId);
 
@@ -20,6 +36,12 @@ namespace DndCompanion.Data.Services
 
         Task<CampaignModel> GetCampaignByIdAsync(int id);
 
+        Task<IEnumerable<CampaignModel>> GetCampaignsByUserInvitationsAsync(UserModel user);
 
+        Task AssignCharacterToCampaignAsync(CampaignModel campaign, CharacterModel character);
+
+        Task UnassignCharacterFromCampaignAsync(int campaignId, int characterId);
+
+        Task DeleteInvitationAsync(int invitationId);
     }
 }

@@ -7,12 +7,11 @@ namespace DndCompanion.Controllers
 {
     public class CampaignsController : CommonController
     {
-        private readonly ICampaingsService _campaingsService;
-
-        public CampaignsController(ICampaingsService campaingsService)
-        {
-            _campaingsService = campaingsService;
-        }
+        public CampaignsController(
+            ICampaingsService campaingsService,
+            ICharactersService charactersService
+        )
+            : base(campaingsService, charactersService) { }
 
         [Authorize]
         public async Task<IActionResult> Index()
@@ -24,7 +23,9 @@ namespace DndCompanion.Controllers
             IEnumerable<CampaignModel> campaigns =
                 await _campaingsService.GetOwnedCampaignsByUserAsync(user);
 
-            campaigns = campaigns.Concat(await _campaingsService.GetJoinedCampaignsByUserAsync(user));
+            campaigns = campaigns.Concat(
+                await _campaingsService.GetJoinedCampaignsByUserAsync(user)
+            );
 
             return View(campaigns);
         }

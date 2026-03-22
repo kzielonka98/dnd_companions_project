@@ -1,4 +1,5 @@
 using DndCompanion.Models;
+using DndCompanion.Models.SystemMessages.CampaingInvitation;
 using Microsoft.EntityFrameworkCore;
 
 namespace DndCompanion.Data.Services
@@ -54,10 +55,44 @@ namespace DndCompanion.Data.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task DeleteInvitationAsync(int invitationId)
+        {
+            var invitation = await _context.CampaignInvitations.FindAsync(invitationId);
+            if (invitation != null)
+            {
+                _context.CampaignInvitations.Remove(invitation);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task CreateCampaingInvitationAsync(
+            CampaignModel campaign,
+            UserModel sender,
+            UserModel receiver,
+            string content
+        )
+        {
+            content ??=
+                $"You have been invited by {sender.UserName} to join the campaign {campaign.Name}.";
+
+            CampaignInvitationModel invitation = new()
+            {
+                CampaignId = campaign.Id,
+                Campaign = campaign,
+                SenderId = sender.Id,
+                Sender = sender,
+                ReceiverId = receiver.Id,
+                Receiver = receiver,
+                Content = content,
+            };
+            _context.CampaignInvitations.Add(invitation);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task DeleteUserFromCampaignAsync(int campaignId, string userId)
         {
-            var userCampaign = await _context.UserCampaigns
-                .Where(uc => uc.CampaignId == campaignId && uc.UserId == userId)
+            var userCampaign = await _context
+                .UserCampaigns.Where(uc => uc.CampaignId == campaignId && uc.UserId == userId)
                 .FirstOrDefaultAsync();
             if (userCampaign != null)
             {
@@ -103,9 +138,74 @@ namespace DndCompanion.Data.Services
             var campaign = await _context
                 .Campaigns.Where(c => c.Id == id)
                 .Include(c => c.Users)
-                .Where(us => us.UsersCampaigns.Any(uc => uc.CampaignId == id))
+                .Include(c => c.Characters)
                 .FirstOrDefaultAsync();
             return campaign;
+        }
+
+        public async Task<
+            IEnumerable<CampaignInvitationModel>
+        > GetReceivedCampaignInvitationsForUserAsync(UserModel user)
+        {
+            var invitations = await _context
+                .CampaignInvitations.Where(ci => ci.ReceiverId == user.Id)
+                .Include(ci => ci.Campaign)
+                .Include(ci => ci.Sender)
+                .ToListAsync();
+
+            return invitations;
+        }
+
+        public async Task<
+            IEnumerable<CampaignInvitationModel>
+        > GetSentCampaignInvitationsForUserAsync(UserModel user)
+        {
+            var invitations = await _context
+                .CampaignInvitations.Where(ci => ci.SenderId == user.Id)
+                .Include(ci => ci.Campaign)
+                .Include(ci => ci.Receiver)
+                .ToListAsync();
+
+            return invitations;
+        }
+
+        public async Task<IEnumerable<CampaignModel>> GetCampaignsByUserInvitationsAsync(
+            UserModel user
+        )
+        {
+            var campaigns = await _context
+                .CampaignInvitations.Where(ci => ci.ReceiverId == user.Id)
+                .Include(ci => ci.Sender)
+                .Select(ci => ci.Campaign)
+                .ToListAsync();
+            return campaigns;
+        }
+
+        public Task AssignCharacterToCampaignAsync(CampaignModel campaign, CharacterModel character)
+        {
+            CharacterCampaignModel characterCampaign = new()
+            {
+                CampaignId = campaign.Id,
+                Campaign = campaign,
+                CharacterId = character.Id,
+                Character = character,
+            };
+            _context.CharacterCampaigns.Add(characterCampaign);
+            return _context.SaveChangesAsync();
+        }
+
+        public async Task UnassignCharacterFromCampaignAsync(int campaignId, int characterId)
+        {
+            CharacterCampaignModel CharacterCampaign = await _context
+                .CharacterCampaigns
+                .Where(cc => cc.CampaignId == campaignId &&
+                 cc.CharacterId == characterId)
+                .FirstOrDefaultAsync();
+            if (CharacterCampaign != null)
+            {
+                _context.CharacterCampaigns.Remove(CharacterCampaign);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

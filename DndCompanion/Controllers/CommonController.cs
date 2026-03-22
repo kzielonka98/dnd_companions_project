@@ -1,3 +1,4 @@
+using DndCompanion.Data.Services;
 using DndCompanion.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +7,20 @@ namespace DndCompanion.Controllers
 {
     public class CommonController : Controller
     {
-        public async Task<UserModel> GetCurrentUser()
+        protected readonly ICampaingsService _campaingsService;
+
+        protected readonly ICharactersService _charactersService;
+
+        public CommonController(
+            ICampaingsService campaingsService,
+            ICharactersService charactersService
+        )
+        {
+            _campaingsService = campaingsService;
+            _charactersService = charactersService;
+        }
+
+        protected async Task<UserModel> GetCurrentUser()
         {
             if (User == null || !User.Identity.IsAuthenticated)
             {
@@ -17,7 +31,7 @@ namespace DndCompanion.Controllers
                 .FindByNameAsync(User.Identity.Name);
         }
 
-        public async Task<UserModel> GetUserByUsername(string username)
+        protected async Task<UserModel> GetUserByUsername(string username)
         {
             return await HttpContext
                 .RequestServices.GetService<UserManager<UserModel>>()

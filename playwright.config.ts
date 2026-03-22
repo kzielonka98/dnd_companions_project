@@ -72,7 +72,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-     command: 'dotnet run',
+     command: 'dotnet run --project DndCompanion/',
      url: 'http://localhost:5109',
      reuseExistingServer: !process.env.CI,
    },

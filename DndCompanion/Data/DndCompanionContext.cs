@@ -21,12 +21,6 @@ namespace DndCompanion.Data
                 .UsingEntity<UserCampaignModel>();
 
             builder
-                .Entity<UserModel>()
-                .HasMany(x => x.Campaigns)
-                .WithMany(x => x.Users)
-                .UsingEntity<UserCampaignModel>();
-
-            builder
                 .Entity<CampaignModel>()
                 .HasMany(c => c.Users)
                 .WithMany(u => u.Campaigns)
@@ -38,6 +32,11 @@ namespace DndCompanion.Data
                 .WithMany(u => u.OwnedCharacters)
                 .HasForeignKey(c => c.OwnerId)
                 .IsRequired();
+
+            builder.Entity<CharacterModel>()
+                .HasMany(c => c.Campaigns)
+                .WithMany(c => c.Characters)
+                .UsingEntity<CharacterCampaignModel>();
 
             builder
                 .Entity<CampaignInvitationModel>()
@@ -57,6 +56,7 @@ namespace DndCompanion.Data
         public DbSet<CampaignModel> Campaigns { get; set; }
         public DbSet<CharacterModel> Characters { get; set; }
         public DbSet<UserCampaignModel> UserCampaigns { get; set; }
+        public DbSet<CharacterCampaignModel> CharacterCampaigns { get; set; }
         public DbSet<CampaignInvitationModel> CampaignInvitations { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 using DndCompanion.Data.Services;
 using DndCompanion.Models;
+using DndCompanion.Models.SystemMessages.CampaingInvitation;
 using DndCompanion.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,18 +9,20 @@ namespace DndCompanion.Controllers
 {
     public class CampaignController : CommonController
     {
-        private readonly ICampaingsService _campaingsService;
-
-        public CampaignController(ICampaingsService campaingsService)
-        {
-            _campaingsService = campaingsService;
-        }
+        public CampaignController(
+            ICampaingsService campaingsService,
+            ICharactersService charactersService
+        )
+            : base(campaingsService, charactersService) { }
 
         public async Task<IActionResult> Index(int id)
         {
             ViewBag.MaxNumberOfPlayersPerCampaign = Constants.MaxNumberOfPlayersPerCampaign;
 
-            var campaign = await _campaingsService.GetCampaignByIdAsync(id);
+            CampaignModel campaign = await _campaingsService.GetCampaignByIdAsync(id);
+            IEnumerable<CharacterModel> characters =
+                await _charactersService.GetCharactersByUserAsync(await GetCurrentUser());
+            ViewBag.UserCharacters = characters;
             bool hasAccess = await HasAccessToCampaign(id);
             if (hasAccess)
             {
@@ -33,8 +36,8 @@ namespace DndCompanion.Controllers
 
         private async Task<bool> HasAccessToCampaign(int campaingId)
         {
-            var campaign = await _campaingsService.GetCampaignByIdAsync(campaingId);
-            var currentUser = await GetCurrentUser();
+            CampaignModel campaign = await _campaingsService.GetCampaignByIdAsync(campaingId);
+            UserModel currentUser = await GetCurrentUser();
 
             // If the user is not logged in, they can only access public campaigns
             if (currentUser == null)
@@ -47,9 +50,8 @@ namespace DndCompanion.Controllers
             }
 
             // User has access to owned campaigns
-            var CurrentUserCampaigns = await _campaingsService.GetOwnedCampaignsByUserAsync(
-                currentUser
-            );
+            IEnumerable<CampaignModel> CurrentUserCampaigns =
+                await _campaingsService.GetOwnedCampaignsByUserAsync(currentUser);
 
             // User has access to joined campaigns
             CurrentUserCampaigns = CurrentUserCampaigns.Concat(
@@ -99,8 +101,8 @@ namespace DndCompanion.Controllers
                 return View(addUserToCampaingViewModel);
             }
 
-            var user = await GetUserByUsername(addUserToCampaingViewModel.UserName);
-            var currentUser = await GetCurrentUser();
+            UserModel user = await GetUserByUsername(addUserToCampaingViewModel.UserName);
+            UserModel currentUser = await GetCurrentUser();
 
             if (user == null)
             {
@@ -114,15 +116,19 @@ namespace DndCompanion.Controllers
                 return View(addUserToCampaingViewModel);
             }
 
-            var invitations = await _campaingsService.GetSentCampaignInvitationsForUserAsync(currentUser);
+            IEnumerable<CampaignInvitationModel> invitations =
+                await _campaingsService.GetSentCampaignInvitationsForUserAsync(currentUser);
 
             if (invitations.Any(i => i.ReceiverId == user.Id && i.CampaignId == campaignId))
             {
-                ModelState.AddModelError(string.Empty, "You have already sent an invitation to this user for this campaign.");
+                ModelState.AddModelError(
+                    string.Empty,
+                    "You have already sent an invitation to this user for this campaign."
+                );
                 return View(addUserToCampaingViewModel);
             }
 
-            var campaign = await _campaingsService.GetCampaignByIdAsync(campaignId);
+            CampaignModel campaign = await _campaingsService.GetCampaignByIdAsync(campaignId);
 
             if (campaign == null)
             {
@@ -157,17 +163,21 @@ namespace DndCompanion.Controllers
                 addUserToCampaingViewModel.Content
             );
             addUserToCampaingViewModel.UserName = string.Empty;
-            ModelState.AddModelError(string.Empty, $"Invitation to {user.UserName} sent successfully.");
+            ModelState.AddModelError(
+                string.Empty,
+                $"Invitation to {user.UserName} sent successfully."
+            );
             return View(addUserToCampaingViewModel);
         }
 
         [Authorize]
         public async Task<IActionResult> DeleteUser(string userId, int campaignId)
         {
-            var currentUser = await GetCurrentUser();
-            var ownedCampaings = await _campaingsService.GetOwnedCampaignsByUserAsync(currentUser);
+            UserModel currentUser = await GetCurrentUser();
+            IEnumerable<CampaignModel> ownedCampaings =
+                await _campaingsService.GetOwnedCampaignsByUserAsync(currentUser);
 
-            var campaign = ownedCampaings.First(c => c.Id == campaignId);
+            CampaignModel campaign = ownedCampaings.First(c => c.Id == campaignId);
 
             if (campaign == null)
             {
@@ -189,10 +199,11 @@ namespace DndCompanion.Controllers
         [Authorize]
         public async Task<IActionResult> LeaveCampaign(int campaignId)
         {
-            var currentUser = await GetCurrentUser();
-            var joinedCampaings = await _campaingsService.GetJoinedCampaignsByUserAsync(currentUser);
+            UserModel currentUser = await GetCurrentUser();
+            IEnumerable<CampaignModel> joinedCampaings =
+                await _campaingsService.GetJoinedCampaignsByUserAsync(currentUser);
 
-            var campaign = joinedCampaings.First(c => c.Id == campaignId);
+            CampaignModel campaign = joinedCampaings.First(c => c.Id == campaignId);
 
             if (campaign == null)
             {
@@ -208,8 +219,9 @@ namespace DndCompanion.Controllers
         [Authorize]
         public async Task<IActionResult> CampaingInvitations()
         {
-            var currentUser = await GetCurrentUser();
-            var invitations = await _campaingsService.GetReceivedCampaignInvitationsForUserAsync(currentUser);
+            UserModel currentUser = await GetCurrentUser();
+            IEnumerable<CampaignInvitationModel> invitations =
+                await _campaingsService.GetReceivedCampaignInvitationsForUserAsync(currentUser);
             invitations = invitations.Concat(
                 await _campaingsService.GetSentCampaignInvitationsForUserAsync(currentUser)
             );
@@ -219,9 +231,12 @@ namespace DndCompanion.Controllers
         [Authorize]
         public async Task<IActionResult> AcceptInvitation(int invitationId)
         {
-            var currentUser = await GetCurrentUser();
-            var invitations = await _campaingsService.GetReceivedCampaignInvitationsForUserAsync(currentUser);
-            var invitation = invitations.FirstOrDefault(i => i.Id == invitationId);
+            UserModel currentUser = await GetCurrentUser();
+            IEnumerable<CampaignInvitationModel> invitations =
+                await _campaingsService.GetReceivedCampaignInvitationsForUserAsync(currentUser);
+            CampaignInvitationModel? invitation = invitations.FirstOrDefault(i =>
+                i.Id == invitationId
+            );
 
             if (invitation == null)
             {
@@ -236,10 +251,15 @@ namespace DndCompanion.Controllers
         [Authorize]
         public async Task<IActionResult> CancelInvitation(int invitationId)
         {
-            var currentUser = await GetCurrentUser();
-            var invitations = await _campaingsService.GetSentCampaignInvitationsForUserAsync(currentUser);
-            invitations.Concat(await _campaingsService.GetReceivedCampaignInvitationsForUserAsync(currentUser));
-            var invitation = invitations.FirstOrDefault(i => i.Id == invitationId);
+            UserModel currentUser = await GetCurrentUser();
+            IEnumerable<CampaignInvitationModel> invitations =
+                await _campaingsService.GetSentCampaignInvitationsForUserAsync(currentUser);
+            invitations.Concat(
+                await _campaingsService.GetReceivedCampaignInvitationsForUserAsync(currentUser)
+            );
+            CampaignInvitationModel? invitation = invitations.FirstOrDefault(i =>
+                i.Id == invitationId
+            );
 
             if (invitation == null)
             {
@@ -249,6 +269,78 @@ namespace DndCompanion.Controllers
             await _campaingsService.DeleteInvitationAsync(invitation.Id);
 
             return RedirectToAction("CampaingInvitations");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> AssignCharacter(int campaignId, int characterId)
+        {
+            UserModel currentUser = await GetCurrentUser();
+            CampaignModel campaign = await _campaingsService.GetCampaignByIdAsync(campaignId);
+            CharacterModel character = await _charactersService.GetCharacterByIdAsync(characterId);
+
+            // Check if the campaign and character exist
+            if (campaign == null || character == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            // Check if the character belongs to the current user
+            if (character.OwnerId != currentUser.Id)
+            {
+                ModelState.AddModelError(string.Empty, "You can only assign your own characters.");
+                return RedirectToAction("Index", new { id = campaignId });
+            }
+
+            // Check if the user is part of the campaign
+            if (!campaign.UsersCampaigns.Any(uc => uc.UserId == currentUser.Id))
+            {
+                ModelState.AddModelError(string.Empty, "You are not part of this campaign.");
+                return RedirectToAction("Index", new { id = campaignId });
+            }
+
+            //Check if user already has a character assigned to the campaign
+            if (campaign.Characters.Any(c => c.OwnerId == currentUser.Id))
+            {
+                ModelState.AddModelError(string.Empty, "You already have a character assigned to this campaign.");
+                return RedirectToAction("Index", new { id = campaignId });
+            }
+
+            await _campaingsService.AssignCharacterToCampaignAsync(campaign, character);
+
+            return RedirectToAction("Index", new { id = campaignId });
+        }
+
+        [Authorize]
+        public async Task<IActionResult> UnassignCharacter(int campaignId, int characterId)
+        {
+            UserModel currentUser = await GetCurrentUser();
+            CampaignModel campaign = await _campaingsService.GetCampaignByIdAsync(campaignId);
+            CharacterModel character = await _charactersService.GetCharacterByIdAsync(characterId);
+
+            // Check if the campaign and character exist
+            if (campaign == null || character == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            // Check if the user is part of the campaign
+            if (!campaign.UsersCampaigns.Any(uc => uc.UserId == currentUser.Id))
+            {
+                ModelState.AddModelError(string.Empty, "You are not part of this campaign.");
+                return RedirectToAction("Index", new { id = campaignId });
+            }
+
+            // Check if the character belongs to the current user or user is owner of campaing
+            bool isOwner = campaign.UsersCampaigns.FirstOrDefault(uc => uc.IsOwner).UserId == currentUser.Id;
+            if(!isOwner && character.OwnerId != currentUser.Id)
+            {
+                ModelState.AddModelError(string.Empty, "You are not owner of this character or campaign");
+                return RedirectToAction("Index", new { id = campaignId });
+            }
+
+            await _campaingsService.UnassignCharacterFromCampaignAsync(campaignId, characterId);
+
+            return RedirectToAction("Index", new { id = campaignId });
         }
     }
 }

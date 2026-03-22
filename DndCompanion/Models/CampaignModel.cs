@@ -21,5 +21,9 @@ namespace DndCompanion.Models
         public ICollection<UserModel> Users { get; set; } = [];
 
         public ICollection<UserCampaignModel> UsersCampaigns { get; set; } = [];
+
+        public ICollection<CharacterModel> Characters { get; set; } = [];
+
+        public ICollection<CharacterCampaignModel> CharacterCampaigns { get; set; } = [];
     }
 }

@@ -38,6 +38,10 @@ namespace DndCompanion.Data.Services
 
         Task<IEnumerable<CampaignModel>> GetCampaignsByUserInvitationsAsync(UserModel user);
 
+        Task AssignCharacterToCampaignAsync(CampaignModel campaign, CharacterModel character);
+
+        Task UnassignCharacterFromCampaignAsync(int campaignId, int characterId);
+
         Task DeleteInvitationAsync(int invitationId);
     }
 }

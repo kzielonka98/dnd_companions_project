@@ -20,5 +20,9 @@ namespace DndCompanion.Models
         public string OwnerId { get; set; } = null!;
 
         public byte[]? AvatarImage { get; set; } = null!;
+
+        public ICollection<CampaignModel> Campaigns { get; set; } = [];
+
+        public ICollection<CharacterCampaignModel> CharacterCampaigns { get; set; } = [];
     }
 }

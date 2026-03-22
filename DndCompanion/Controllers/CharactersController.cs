@@ -8,12 +8,11 @@ namespace DndCompanion.Controllers
 {
     public class CharactersController : CommonController
     {
-        private readonly ICharactersService _charactersService;
-
-        public CharactersController(ICharactersService charactersService)
-        {
-            _charactersService = charactersService;
-        }
+        public CharactersController(
+            ICampaingsService campaingsService,
+            ICharactersService charactersService
+        )
+            : base(campaingsService, charactersService) { }
 
         [Authorize]
         public async Task<IActionResult> Index()
@@ -76,8 +75,10 @@ namespace DndCompanion.Controllers
                     }
                     else
                     {
-                        ModelState.AddModelError("File",
-                            "The file is too large. Maximum allowed size is 10 MiB.");
+                        ModelState.AddModelError(
+                            "File",
+                            "The file is too large. Maximum allowed size is 10 MiB."
+                        );
                         return View(model);
                     }
                 }
